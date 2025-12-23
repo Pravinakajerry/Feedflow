@@ -1,6 +1,6 @@
 /**
  * Style Inspector - Figma-like visual style inspector
- * Type "test" to toggle on/off
+ * Type "flow" to toggle on/off
  * Click on elements to see their styles in a visual Figma-style panel
  * 
  * STRUCTURE:
@@ -1595,8 +1595,8 @@ console.log('Style Inspector loaded');
                 typedChars = typedChars.slice(-4);
             }
 
-            // Check if "test" was typed
-            if (typedChars === 'test') {
+            // Check if "flow" was typed
+            if (typedChars === 'flow') {
                 e.preventDefault();
                 toggleInspector();
                 typedChars = ''; // Reset
@@ -1703,13 +1703,13 @@ console.log('Style Inspector loaded');
                 requestMotionPermission();
                 document.removeEventListener('touchend', enableShake);
             }, { once: true });
-            console.log('🔍 Style Inspector loaded! Type "test", 3-finger tap, or shake to toggle.');
+            console.log('🔍 Style Inspector loaded! Type "flow", 3-finger tap, or shake to toggle.');
         } else {
             requestMotionPermission();
-            console.log('🔍 Style Inspector loaded! Type "test", 3-finger tap, or shake to toggle.');
+            console.log('🔍 Style Inspector loaded! Type "flow", 3-finger tap, or shake to toggle.');
         }
     } else {
-        console.log('🔍 Style Inspector loaded! Type "test" to toggle.');
+        console.log('🔍 Style Inspector loaded! Type "flow" to toggle.');
     }
 
     // -------------------------------------------------------------------------
