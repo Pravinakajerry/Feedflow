@@ -1210,6 +1210,29 @@ console.log('Style Inspector loaded');
 
     // Mouse move handler
     function handleMouseMove(e) {
+        const playground = document.getElementById('playground');
+
+        // Auto-enable/disable based on playground hover
+        if (playground) {
+            // Check if mouse is inside playground OR inside any inspector UI
+            const isInsidePlayground = playground.contains(e.target) || e.target === playground;
+
+            // Check if inside inspector UI (to prevent flickering when hovering UI elements)
+            const isInsideUI = (tooltip && tooltip.contains(e.target)) ||
+                (layerBar && layerBar.contains(e.target)) ||
+                (skimButton && skimButton.contains(e.target)) ||
+                (skimModal && skimModal.contains(e.target)) ||
+                e.target.closest('#style-inspector-skim-wrapper');
+
+            if (isInsidePlayground || isInsideUI) {
+                if (!isActive) enableInspector();
+            } else {
+                if (isActive && !isPinned) disableInspector(); // Only disable if not pinned? Or just disable.
+                // Assuming strict "active if cursor on playground" means we disable if it leaves.
+                if (isActive && !isPinned) disableInspector();
+            }
+        }
+
         if (!isActive) return;
 
         // Cancel any pending RAF to avoid stacking
@@ -1339,36 +1362,47 @@ console.log('Style Inspector loaded');
     // 8. MODE MANAGEMENT
     // =========================================================================
 
+    // Enable inspector
+    function enableInspector() {
+        if (isActive) return;
+        isActive = true;
+
+        // console.log('🔍 Style Inspector: ENABLED');
+        if (!tooltip) tooltip = createTooltip();
+        if (!highlightOverlay) highlightOverlay = createHighlightOverlay();
+        if (!measurementOverlay) measurementOverlay = createMeasurementOverlay();
+        if (!layerBar) layerBar = createLayerBar();
+        if (!skimButton) skimButton = createSkimButton();
+        else skimButton.style.display = 'flex';
+
+        window.addEventListener('scroll', throttleSkimUpdate);
+        window.addEventListener('resize', throttleSkimUpdate);
+    }
+
+    // Disable inspector
+    function disableInspector() {
+        if (!isActive) return;
+        isActive = false;
+
+        // console.log('🔍 Style Inspector: DISABLED');
+        unpinTooltip();
+        if (tooltip) tooltip.style.display = 'none';
+        if (highlightOverlay) highlightOverlay.style.display = 'none';
+        if (measurementOverlay) measurementOverlay.style.display = 'none';
+        if (layerBar) layerBar.style.display = 'none';
+        if (skimButton) skimButton.style.display = 'none';
+        if (skimModal) skimModal.style.display = 'none';
+        if (skimLabelsContainer) { skimLabelsContainer.remove(); skimLabelsContainer = null; }
+        skimProperties.clear();
+
+        window.removeEventListener('scroll', throttleSkimUpdate);
+        window.removeEventListener('resize', throttleSkimUpdate);
+    }
+
     // Toggle inspector
     function toggleInspector() {
-        isActive = !isActive;
-
-        if (isActive) {
-            console.log('🔍 Style Inspector: ENABLED (Type "test" to disable)');
-            if (!tooltip) tooltip = createTooltip();
-            if (!highlightOverlay) highlightOverlay = createHighlightOverlay();
-            if (!measurementOverlay) measurementOverlay = createMeasurementOverlay();
-            if (!layerBar) layerBar = createLayerBar();
-            if (!skimButton) skimButton = createSkimButton();
-            else skimButton.style.display = 'flex';
-
-            window.addEventListener('scroll', throttleSkimUpdate);
-            window.addEventListener('resize', throttleSkimUpdate);
-        } else {
-            console.log('🔍 Style Inspector: DISABLED (Type "test" to enable)');
-            unpinTooltip();
-            if (tooltip) tooltip.style.display = 'none';
-            if (highlightOverlay) highlightOverlay.style.display = 'none';
-            if (measurementOverlay) measurementOverlay.style.display = 'none';
-            if (layerBar) layerBar.style.display = 'none';
-            if (skimButton) skimButton.style.display = 'none';
-            if (skimModal) skimModal.style.display = 'none';
-            if (skimLabelsContainer) { skimLabelsContainer.remove(); skimLabelsContainer = null; }
-            skimProperties.clear();
-
-            window.removeEventListener('scroll', throttleSkimUpdate);
-            window.removeEventListener('resize', throttleSkimUpdate);
-        }
+        if (isActive) disableInspector();
+        else enableInspector();
     }
 
     // Double click handler to edit text
